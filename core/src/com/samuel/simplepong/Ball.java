@@ -8,8 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
  * Created by SamuelDong on 2/17/16.
  */
 public class Ball extends Actor {
-    private TextureRegion ball;
     public float x, y, dx, dy;
+    private TextureRegion ball;
+
     public Ball() {
         ball = new TextureRegion(SimplePong.PongTexture, 300, 500, 100, 100);
         x = 500;

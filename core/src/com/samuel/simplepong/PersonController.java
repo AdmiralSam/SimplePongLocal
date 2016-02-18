@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 /**
  * Created by SamuelDong on 2/16/16.
  */
-public class PersonController extends InputListener{
+public class PersonController extends InputListener {
     private boolean dragging;
     private float x, y;
     private float location;
@@ -38,8 +38,7 @@ public class PersonController extends InputListener{
         if (dragging) {
             if (Math.abs(this.x - x) > 50) {
                 dragging = false;
-            }
-            else {
+            } else {
                 paddle.setLocation(location + y - this.y);
                 networkManager.sendLocation(paddle.getLocation());
             }

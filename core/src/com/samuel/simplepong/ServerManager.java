@@ -20,6 +20,11 @@ public class ServerManager extends NetworkManager {
     }
 
     @Override
+    public void update(float deltaTime) {
+
+    }
+
+    @Override
     public boolean getSide() {
         return true;
     }
@@ -55,8 +60,7 @@ public class ServerManager extends NetworkManager {
             if (received == -1.0f) {
                 listener.onReady(true);
                 connection.sendTCP(-1.0f);
-            }
-            else if (paddleListener != null){
+            } else if (paddleListener != null) {
                 paddleListener.movePaddle(received);
             }
         }

@@ -9,10 +9,13 @@ public abstract class NetworkManager extends Listener {
     protected State currentState;
     protected ReadyListener listener;
     protected PaddleListener paddleListener;
+
     protected NetworkManager(ReadyListener listener) {
         currentState = State.Waiting;
         this.listener = listener;
     }
+
+    public abstract void update(float deltaTime);
 
     public abstract boolean getSide();
 

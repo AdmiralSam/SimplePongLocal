@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
-public class SimplePong extends ApplicationAdapter implements ReadyListener{
+public class SimplePong extends ApplicationAdapter implements ReadyListener {
     public static Texture PongTexture;
     public static Texture ButtonTexture;
     private State currentState;
@@ -98,6 +98,7 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener{
     }
 
     private void switchState(State state) {
+        //perform cleanup for current state
         switch (currentState) {
             case Menu:
                 host.remove();
@@ -107,6 +108,8 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener{
                 cancel.remove();
                 break;
         }
+
+        //perform setup for new state
         switch (state) {
             case Menu:
                 stage.addActor(host);
@@ -136,13 +139,13 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener{
     }
 
     private void hostClick() {
-        networkManager = new ServerManager(this);
+        networkManager = new LatencyManager(new ServerManager(this), 0.5f, 0.1f);
         networkManager.startUp();
         switchState(State.Waiting);
     }
 
     private void findClick() {
-        networkManager = new ClientManager(this);
+        networkManager = new LatencyManager(new ClientManager(this), 0.5f, 0.1f);
         networkManager.startUp();
         switchState(State.Waiting);
     }

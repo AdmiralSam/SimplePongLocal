@@ -24,6 +24,11 @@ public class ClientManager extends NetworkManager {
     }
 
     @Override
+    public void update(float deltaTime) {
+        
+    }
+
+    @Override
     public void startUp() {
         client.start();
         client.addListener(this);

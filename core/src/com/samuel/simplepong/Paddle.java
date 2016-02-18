@@ -23,12 +23,12 @@ public class Paddle extends Actor {
         batch.draw(paddleRegion, x - 25, y - 100);
     }
 
+    public float getLocation() {
+        return y;
+    }
+
     public void setLocation(float y) {
         this.y = Math.max(Math.min(y, 400), 100);
         setBounds(x - 25, y - 100, 50, 200);
-    }
-
-    public float getLocation() {
-        return y;
     }
 }
