@@ -25,8 +25,8 @@ public class Ball extends Actor {
     }
 
     @Override
-    public void act(float delta) {
-        x += dx * delta;
-        y += dy * delta;
+    public void act(float deltaTime) {
+        x += dx * deltaTime;
+        y += dy * deltaTime;
     }
 }

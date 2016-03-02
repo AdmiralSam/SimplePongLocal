@@ -70,6 +70,10 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
 
     @Override
     public void render() {
+        if (networkManager != null) {
+            networkManager.update(Gdx.graphics.getDeltaTime());
+        }
+
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
         if (ball.x < -50 || ball.x > 1050) {
