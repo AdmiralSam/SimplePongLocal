@@ -17,6 +17,7 @@ public class ServerManager extends NetworkManager {
         super(listener);
         server = new Server();
         server.getKryo().register(Float.class);
+        server.getKryo().register(Packet.class);
     }
 
     @Override
@@ -46,9 +47,8 @@ public class ServerManager extends NetworkManager {
         server.close();
     }
 
-    @Override
-    public void sendLocation(float location) {
-        connection.sendTCP(location);
+    public void sendLocation(Packet packet) {
+        connection.sendTCP(packet);
     }
 
     @Override
@@ -60,8 +60,13 @@ public class ServerManager extends NetworkManager {
             if (received == -1.0f) {
                 listener.onReady(true);
                 connection.sendTCP(-1.0f);
-            } else if (paddleListener != null) {
-                paddleListener.movePaddle(received);
+            }
+        }
+        else if(o instanceof Packet){
+            Packet received =(Packet) o;
+            if (paddleListener != null) {
+                paddleListener.moveClientPaddle(received.getLocation());
+                sendLocation(received);
             }
         }
     }

@@ -14,7 +14,7 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
     public static Texture ButtonTexture;
     private State currentState;
     private Button host, find, cancel;
-    private Paddle left, right;
+    private Paddle serverPaddle, clientPaddle;
     private Stage stage;
     private NetworkManager networkManager;
     private PersonController person;
@@ -41,8 +41,8 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
         host = new Button(0, 0, 500, 250);
         find = new Button(512, 0, 500, 150);
         cancel = new Button(0, 512, 500, 250);
-        left = new Paddle(100, 250);
-        right = new Paddle(900, 250);
+        serverPaddle = new Paddle(100, 250);
+        clientPaddle = new Paddle(900, 250);
         ball = new Ball();
         host.addListener(new InputListener() {
             @Override
@@ -90,11 +90,11 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
                 ball.y = 450;
                 ball.dy *= -1;
             }
-            if (ball.x < 175 && ball.x > 125 && Math.abs(left.getLocation() - ball.y) < 150) {
+            if (ball.x < 175 && ball.x > 125 && Math.abs(serverPaddle.getLocation() - ball.y) < 150) {
                 ball.x = 175;
                 ball.dx *= -1;
             }
-            if (ball.x > 825 && ball.x < 875 && Math.abs(right.getLocation() - ball.y) < 150) {
+            if (ball.x > 825 && ball.x < 875 && Math.abs(clientPaddle.getLocation() - ball.y) < 150) {
                 ball.x = 825;
                 ball.dx *= -1;
             }
@@ -123,18 +123,18 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
                 stage.addActor(cancel);
                 break;
             case Game:
-                stage.addActor(left);
-                stage.addActor(right);
+                stage.addActor(serverPaddle);
+                stage.addActor(clientPaddle);
                 stage.addActor(ball);
                 if (networkManager.getSide()) {
-                    person = new PersonController(networkManager, left);
-                    left.addListener(person);
-                    network = new NetworkController(right);
+                    person = new PersonController(networkManager, serverPaddle);
+                    serverPaddle.addListener(person);
+                    network = new NetworkController(clientPaddle);
                     networkManager.setPaddleListener(network);
                 } else {
-                    person = new PersonController(networkManager, right);
-                    right.addListener(person);
-                    network = new NetworkController(left);
+                    person = new PersonController(networkManager, clientPaddle);
+                    clientPaddle.addListener(person);
+                    network = new NetworkController(clientPaddle, serverPaddle);
                     networkManager.setPaddleListener(network);
                 }
                 break;

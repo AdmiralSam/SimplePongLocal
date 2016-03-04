@@ -9,7 +9,8 @@ import java.util.Random;
  */
 public class LatencyManager extends NetworkManager {
     private NetworkManager networkManager;
-    private Queue<Float> messages, times;
+    private Queue<Packet> messages;
+    private Queue<Float>  times;
     private float currentTime;
     private float mean, variance;
     private Random random;
@@ -20,7 +21,7 @@ public class LatencyManager extends NetworkManager {
         currentTime = 0;
         this.mean = mean;
         this.variance = variance;
-        messages = new LinkedList<Float>();
+        messages = new LinkedList<Packet>();
         times = new LinkedList<Float>();
         random = new Random();
     }
@@ -50,8 +51,8 @@ public class LatencyManager extends NetworkManager {
     }
 
     @Override
-    public void sendLocation(float location) {
-        messages.add(location);
+    public void sendLocation(Packet packet) {
+        messages.add(packet);
         times.add(currentTime + (mean + (random.nextFloat() * 2.0f - 1.0f) * variance));
     }
 }

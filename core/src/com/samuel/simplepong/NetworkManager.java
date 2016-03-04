@@ -23,7 +23,7 @@ public abstract class NetworkManager extends Listener {
 
     public abstract void shutDown();
 
-    public abstract void sendLocation(float location);
+    public abstract void sendLocation(Packet packet);
 
     public void setPaddleListener(PaddleListener paddleListener) {
         this.paddleListener = paddleListener;

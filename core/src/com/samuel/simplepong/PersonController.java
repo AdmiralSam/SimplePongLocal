@@ -39,8 +39,15 @@ public class PersonController extends InputListener {
             if (Math.abs(this.x - x) > 50) {
                 dragging = false;
             } else {
-                paddle.setLocation(location + y - this.y);
-                networkManager.sendLocation(paddle.getLocation());
+                if(networkManager.getSide())
+                {
+                    paddle.setLocation(location + y - this.y);
+                    networkManager.sendLocation(new Packet(paddle.getLocation(),true));
+                }
+                else
+                {
+                    networkManager.sendLocation(new Packet(paddle.getLocation(),false));
+                }
             }
         }
     }

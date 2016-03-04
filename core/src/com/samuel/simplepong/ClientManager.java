@@ -16,6 +16,8 @@ public class ClientManager extends NetworkManager {
         super(listener);
         client = new Client();
         client.getKryo().register(Float.class);
+        client.getKryo().register(Packet.class);
+
     }
 
     @Override
@@ -54,20 +56,29 @@ public class ClientManager extends NetworkManager {
         client.close();
     }
 
-    @Override
-    public void sendLocation(float location) {
-        client.sendTCP(location);
+    public void sendLocation(Packet packet) {
+        client.sendTCP(packet);
     }
 
     @Override
     public void received(Connection connection, Object o) {
         if (o instanceof Float) {
-            float received = (Float) o;
+            Float received = (Float) o;
             Gdx.app.debug("Network", received + "");
             if (received == -1.0f) {
                 listener.onReady(true);
-            } else if (paddleListener != null) {
-                paddleListener.movePaddle(received);
+            }
+        }
+        else if (o instanceof Packet)
+        {
+            Packet received = (Packet)o;
+
+            if(paddleListener != null) {
+                if(received.getSide())
+                {
+                    paddleListener.moveServerPaddle(received.getLocation());
+                }
+                else paddleListener.moveClientPaddle(received.getLocation());
             }
         }
     }
