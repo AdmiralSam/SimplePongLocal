@@ -9,23 +9,33 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class SimplePong extends ApplicationAdapter implements ReadyListener {
     public static Texture PongTexture;
     public static Texture ButtonTexture;
     private State currentState;
     private Button host, find, cancel;
-    private Paddle serverPaddle, clientPaddle;
+    public static Paddle serverPaddle, clientPaddle;
     private Stage stage;
-    private NetworkManager networkManager;
+    private LatencyManager latencyManager;
     private PersonController person;
     private NetworkController network;
-    private Ball ball;
+    public static Ball ball;
+
+    private Button modeSwitch;
+    public static boolean clientPredictionOn=false;
+
+    public static float timestamp;
+    public static Queue<ClientState> stateQueue;
+    private boolean timeReady=false;
 
     @Override
     public void dispose() {
         super.dispose();
-        if (networkManager != null) {
-            networkManager.shutDown();
+        if (latencyManager != null) {
+            latencyManager.shutDown();
         }
     }
 
@@ -38,9 +48,12 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
         ButtonTexture = new Texture("testTexture.png");
         stage.addActor(new Background());
         currentState = State.Menu;
+
         host = new Button(0, 0, 500, 250);
         find = new Button(512, 0, 500, 150);
         cancel = new Button(0, 512, 500, 250);
+        modeSwitch=new Button(0, 512, 500, 250);
+
         serverPaddle = new Paddle(100, 250);
         clientPaddle = new Paddle(900, 250);
         ball = new Ball();
@@ -70,35 +83,31 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
 
     @Override
     public void render() {
-        if (networkManager != null) {
-            networkManager.update(Gdx.graphics.getDeltaTime());
+        if (latencyManager != null) {
+            latencyManager.update(Gdx.graphics.getDeltaTime());
         }
 
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
-        if (ball.x < -50 || ball.x > 1050) {
-            ball.x = 500;
-            ball.y = 250;
-            ball.dx = 200;
-            ball.dy = 200;
-        } else {
-            if (ball.y < 50) {
-                ball.y = 50;
-                ball.dy *= -1;
+        if(latencyManager != null && timeReady) {
+
+            if(latencyManager.getSide()) {
+
+                stage.act(Gdx.graphics.getDeltaTime());
+                latencyManager.storeLocation(new Packet(serverPaddle.getLocation(), clientPaddle.getLocation()
+                        , ball.x,ball.y,ball.dx,ball.dy, timestamp));
             }
-            if (ball.y > 450) {
-                ball.y = 450;
-                ball.dy *= -1;
+            else
+            {
+                if(clientPredictionOn) stage.act(Gdx.graphics.getDeltaTime());
+                if(SimplePong.clientPredictionOn)
+                    stateQueue.add(new ClientState(ball,clientPaddle,serverPaddle,timestamp));
+                Gdx.app.debug("QueueElementNumber", SimplePong.stateQueue.size() + " ");
             }
-            if (ball.x < 175 && ball.x > 125 && Math.abs(serverPaddle.getLocation() - ball.y) < 150) {
-                ball.x = 175;
-                ball.dx *= -1;
-            }
-            if (ball.x > 825 && ball.x < 875 && Math.abs(clientPaddle.getLocation() - ball.y) < 150) {
-                ball.x = 825;
-                ball.dx *= -1;
-            }
+
+            timestamp+=Gdx.graphics.getDeltaTime();
         }
+
+        stage.draw();
+
     }
 
     private void switchState(State state) {
@@ -126,48 +135,70 @@ public class SimplePong extends ApplicationAdapter implements ReadyListener {
                 stage.addActor(serverPaddle);
                 stage.addActor(clientPaddle);
                 stage.addActor(ball);
-                if (networkManager.getSide()) {
-                    person = new PersonController(networkManager, serverPaddle);
+
+                if (latencyManager.getSide()) {
+                    person = new PersonController(latencyManager, serverPaddle);
                     serverPaddle.addListener(person);
+                    //clientPaddle.addListener(person);
                     network = new NetworkController(clientPaddle);
-                    networkManager.setPaddleListener(network);
+                    latencyManager.networkManager.setActorListener(network);
                 } else {
-                    person = new PersonController(networkManager, clientPaddle);
+
+                    stage.addActor(modeSwitch);
+                    modeSwitch.addListener(new InputListener() {
+                        @Override
+                        public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                            modeSwitchClick();
+                            return true;
+                        }
+                    });
+
+                    person = new PersonController(latencyManager, clientPaddle);
                     clientPaddle.addListener(person);
-                    network = new NetworkController(clientPaddle, serverPaddle);
-                    networkManager.setPaddleListener(network);
+                    network = new NetworkController(clientPaddle, serverPaddle, ball);
+                    latencyManager.networkManager.setActorListener(network);
                 }
                 break;
         }
         currentState = state;
     }
 
+    private void modeSwitchClick(){
+        if(clientPredictionOn) {clientPredictionOn=false;modeSwitch.setColor(0,512);}
+        else {clientPredictionOn=true;modeSwitch.setColor(512,0);}
+    }
+
     private void hostClick() {
-        networkManager = new LatencyManager(new ServerManager(this), 0.5f, 0.1f);
-        networkManager.startUp();
+        latencyManager = new LatencyManager(new ServerManager(this), 0.5f, 0.1f);
+        latencyManager.startUp();
         switchState(State.Waiting);
     }
 
     private void findClick() {
-        networkManager = new LatencyManager(new ClientManager(this), 0.5f, 0.1f);
-        networkManager.startUp();
+        latencyManager = new LatencyManager(new ClientManager(this), 0.5f, 0.1f);
+        latencyManager.startUp();
+        stateQueue=new LinkedList<ClientState>();
         switchState(State.Waiting);
     }
 
     private void cancelClick() {
-        networkManager.shutDown();
-        networkManager = null;
+        latencyManager.shutDown();
+        latencyManager = null;
         switchState(State.Menu);
     }
 
     @Override
     public void onReady(boolean succeeded) {
         if (!succeeded) {
-            networkManager.shutDown();
-            networkManager = null;
+            latencyManager.shutDown();
+            latencyManager = null;
+            timeReady=false;
+            timestamp=0;
         }
         switchState(succeeded ? State.Game : State.Menu);
+        timeReady=true;
     }
 
     private enum State {Menu, Waiting, Game}
+
 }

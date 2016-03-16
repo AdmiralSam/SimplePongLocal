@@ -8,7 +8,7 @@ import com.esotericsoftware.kryonet.Listener;
 public abstract class NetworkManager extends Listener {
     protected State currentState;
     protected ReadyListener listener;
-    protected PaddleListener paddleListener;
+    protected ActorListener actorListener;
 
     protected NetworkManager(ReadyListener listener) {
         currentState = State.Waiting;
@@ -25,8 +25,8 @@ public abstract class NetworkManager extends Listener {
 
     public abstract void sendLocation(Packet packet);
 
-    public void setPaddleListener(PaddleListener paddleListener) {
-        this.paddleListener = paddleListener;
+    public void setActorListener(ActorListener actorListener) {
+        this.actorListener = actorListener;
     }
 
     protected enum State {Waiting, Ready}

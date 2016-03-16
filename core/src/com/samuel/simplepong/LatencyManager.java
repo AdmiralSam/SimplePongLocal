@@ -1,5 +1,7 @@
 package com.samuel.simplepong;
 
+import com.badlogic.gdx.Gdx;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -7,8 +9,8 @@ import java.util.Random;
 /**
  * Created by Samuel on 2/18/2016.
  */
-public class LatencyManager extends NetworkManager {
-    private NetworkManager networkManager;
+public class LatencyManager{
+    public NetworkManager networkManager;
     private Queue<Packet> messages;
     private Queue<Float>  times;
     private float currentTime;
@@ -16,7 +18,7 @@ public class LatencyManager extends NetworkManager {
     private Random random;
 
     public LatencyManager(NetworkManager networkManager, float mean, float variance) {
-        super(null);
+        //super(null);
         this.networkManager = networkManager;
         currentTime = 0;
         this.mean = mean;
@@ -26,32 +28,33 @@ public class LatencyManager extends NetworkManager {
         random = new Random();
     }
 
-    @Override
     public void update(float deltaTime) {
         currentTime += deltaTime;
+        //Gdx.app.debug("currentTime", currentTime+" ");
+
         while (!times.isEmpty() && times.element() < currentTime) {
+            //Gdx.app.debug("times.element", times.remove() + " ");
             times.remove();
             networkManager.sendLocation(messages.remove());
         }
     }
 
-    @Override
     public boolean getSide() {
         return networkManager.getSide();
     }
 
-    @Override
     public void startUp() {
         networkManager.startUp();
     }
 
-    @Override
     public void shutDown() {
         networkManager.shutDown();
     }
 
-    @Override
-    public void sendLocation(Packet packet) {
+    public void storeLocation(Packet packet) {
+
+        //Gdx.app.debug("storeLocation", "true");
+
         messages.add(packet);
         times.add(currentTime + (mean + (random.nextFloat() * 2.0f - 1.0f) * variance));
     }

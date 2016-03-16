@@ -1,5 +1,6 @@
 package com.samuel.simplepong;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 
@@ -10,11 +11,11 @@ public class PersonController extends InputListener {
     private boolean dragging;
     private float x, y;
     private float location;
-    private NetworkManager networkManager;
+    private LatencyManager latencyManager;
     private Paddle paddle;
 
-    public PersonController(NetworkManager networkManager, Paddle paddle) {
-        this.networkManager = networkManager;
+    public PersonController(LatencyManager latencyManager, Paddle paddle) {
+        this.latencyManager = latencyManager;
         this.paddle = paddle;
         dragging = false;
     }
@@ -39,14 +40,16 @@ public class PersonController extends InputListener {
             if (Math.abs(this.x - x) > 50) {
                 dragging = false;
             } else {
-                if(networkManager.getSide())
+                if(latencyManager.getSide())
                 {
+                    //Gdx.app.debug("personController", "server");
                     paddle.setLocation(location + y - this.y);
-                    networkManager.sendLocation(new Packet(paddle.getLocation(),true));
                 }
                 else
                 {
-                    networkManager.sendLocation(new Packet(paddle.getLocation(),false));
+                    //Gdx.app.debug("personController", "client");
+                    if(SimplePong.clientPredictionOn) paddle.setLocation(location + y - this.y);
+                    latencyManager.storeLocation(new Packet(location + y - this.y,SimplePong.timestamp));
                 }
             }
         }

@@ -18,6 +18,11 @@ public class Button extends Actor {
         setBounds(centerX - 100, centerY - 37.5f, 200, 75);
     }
 
+    public void setColor(int x, int y)
+    {
+        button = new TextureRegion(SimplePong.ButtonTexture, x, y, 200, 75);
+    }
+
     @Override
     public Actor hit(float x, float y, boolean touchable) {
         return super.hit(x, y, touchable);

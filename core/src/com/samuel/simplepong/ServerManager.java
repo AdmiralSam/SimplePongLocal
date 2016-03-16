@@ -48,6 +48,7 @@ public class ServerManager extends NetworkManager {
     }
 
     public void sendLocation(Packet packet) {
+        if(connection==null) return;
         connection.sendTCP(packet);
     }
 
@@ -55,18 +56,23 @@ public class ServerManager extends NetworkManager {
     public void received(Connection connection, Object o) {
         this.connection = connection;
         if (o instanceof Float) {
-            float received = (Float) o;
-            Gdx.app.debug("Network", received + "");
-            if (received == -1.0f) {
+            float receivedFloat = (Float) o;
+            Gdx.app.debug("Network", receivedFloat + "");
+            if (receivedFloat == -1.0f) {
                 listener.onReady(true);
                 connection.sendTCP(-1.0f);
             }
         }
-        else if(o instanceof Packet){
-            Packet received =(Packet) o;
-            if (paddleListener != null) {
-                paddleListener.moveClientPaddle(received.getLocation());
-                sendLocation(received);
+        else if (o instanceof Packet) {
+            Packet receivedPacket = (Packet) o;
+
+//            if (receivedPacket.isReady()) {
+//                listener.onReady(true);
+//                connection.sendTCP(new Packet(true));
+//            } else
+
+            if (actorListener != null) {
+                actorListener.moveClientPaddle(receivedPacket.getClientPaddlelocation());
             }
         }
     }
